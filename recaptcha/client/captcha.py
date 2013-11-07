@@ -1,4 +1,6 @@
-import urllib2, urllib
+from urllib.request import Request
+from urllib.request import urlopen
+from urllib.parse import urlencode
 
 API_SSL_SERVER="https://www.google.com/recaptcha/api"
 API_SERVER="http://www.google.com/recaptcha/api"
@@ -61,18 +63,18 @@ def submit (recaptcha_challenge_field,
     
 
     def encode_if_necessary(s):
-        if isinstance(s, unicode):
+        if isinstance(s, str):
             return s.encode('utf-8')
         return s
 
-    params = urllib.urlencode ({
+    params = urlencode ({
             'privatekey': encode_if_necessary(private_key),
             'remoteip' :  encode_if_necessary(remoteip),
             'challenge':  encode_if_necessary(recaptcha_challenge_field),
             'response' :  encode_if_necessary(recaptcha_response_field),
             })
 
-    request = urllib2.Request (
+    request = Request (
         url = "http://%s/recaptcha/api/verify" % VERIFY_SERVER,
         data = params,
         headers = {
@@ -81,7 +83,7 @@ def submit (recaptcha_challenge_field,
             }
         )
     
-    httpresp = urllib2.urlopen (request)
+    httpresp = urlopen (request)
 
     return_values = httpresp.read ().splitlines ();
     httpresp.close();
