@@ -73,7 +73,6 @@ def submit (recaptcha_challenge_field,
 
     return_values = httpresp.read ().splitlines ();
     httpresp.close();
-    print (return_values)
     return_code = return_values [0]
     if (return_code == b'true'):
         return RecaptchaResponse (is_valid=True)
