@@ -1,8 +1,7 @@
 from urllib.request import Request
 from urllib.request import urlopen
 from urllib.parse import urlencode
-from django.utils import six
-from django.utils.encoding import smart_bytes
+from django.utils.encoding import force_bytes
 
 API_SSL_SERVER="https://www.google.com/recaptcha/api"
 API_SERVER="http://www.google.com/recaptcha/api"
@@ -50,51 +49,33 @@ def submit (recaptcha_challenge_field,
             private_key,
             remoteip):
 
-    """
-    Submits a reCAPTCHA request for verification. Returns RecaptchaResponse
-    for the request
-
-    recaptcha_challenge_field -- The value of recaptcha_challenge_field from the form
-    recaptcha_response_field -- The value of recaptcha_response_field from the form
-    private_key -- your reCAPTCHA private key
-    remoteip -- the user's ip address
-    """
-
     if not (recaptcha_response_field and recaptcha_challenge_field and
             len (recaptcha_response_field) and len (recaptcha_challenge_field)):
         return RecaptchaResponse (is_valid = False, error_code = 'incorrect-captcha-sol')
-    
-
-    def encode_if_necessary(s):
-        s=smart_bytes(s)
-        if isinstance(s, str):
-            return s.encode('utf-8')
-        return s
 
     params = urlencode ({
-            'privatekey': encode_if_necessary(private_key),
-            'remoteip' :  encode_if_necessary(remoteip),
-            'challenge':  encode_if_necessary(recaptcha_challenge_field),
-            'response' :  encode_if_necessary(recaptcha_response_field),
+            'privatekey': private_key,
+            'remoteip' :  remoteip,
+            'challenge':  recaptcha_challenge_field,
+            'response' :  recaptcha_response_field,
             })
 
     request = Request (
         url = "http://%s/recaptcha/api/verify" % VERIFY_SERVER,
-        data = encode_if_necessary(params),
+        data = force_bytes(params),
         headers = {
             "Content-type": "application/x-www-form-urlencoded",
             "User-agent": "reCAPTCHA Python"
             }
         )
-    
+
     httpresp = urlopen (request)
 
     return_values = httpresp.read ().splitlines ();
     httpresp.close();
-
+    print (return_values)
     return_code = return_values [0]
-
-    if (return_code == "true"):
+    if (return_code == b'true'):
         return RecaptchaResponse (is_valid=True)
     else:
         return RecaptchaResponse (is_valid=False, error_code = return_values [1])
