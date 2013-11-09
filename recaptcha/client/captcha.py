@@ -1,7 +1,8 @@
 from urllib.request import Request
 from urllib.request import urlopen
 from urllib.parse import urlencode
-from django.utils.encoding import force_text
+from django.utils import six
+from django.utils.encoding import smart_bytes
 
 API_SSL_SERVER="https://www.google.com/recaptcha/api"
 API_SERVER="http://www.google.com/recaptcha/api"
@@ -49,8 +50,6 @@ def submit (recaptcha_challenge_field,
             private_key,
             remoteip):
 
-    recaptcha_challenge_field=force_text(recaptcha_challenge_field)
-    recaptcha_response_field=force_text(recaptcha_response_field)
     """
     Submits a reCAPTCHA request for verification. Returns RecaptchaResponse
     for the request
@@ -67,6 +66,7 @@ def submit (recaptcha_challenge_field,
     
 
     def encode_if_necessary(s):
+        s=smart_bytes(s)
         if isinstance(s, str):
             return s.encode('utf-8')
         return s
@@ -80,7 +80,7 @@ def submit (recaptcha_challenge_field,
 
     request = Request (
         url = "http://%s/recaptcha/api/verify" % VERIFY_SERVER,
-        data = params,
+        data = encode_if_necessary(params),
         headers = {
             "Content-type": "application/x-www-form-urlencoded",
             "User-agent": "reCAPTCHA Python"
