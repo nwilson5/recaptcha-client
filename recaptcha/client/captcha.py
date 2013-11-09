@@ -1,6 +1,7 @@
 from urllib.request import Request
 from urllib.request import urlopen
 from urllib.parse import urlencode
+from django.utils.encoding import force_text
 
 API_SSL_SERVER="https://www.google.com/recaptcha/api"
 API_SERVER="http://www.google.com/recaptcha/api"
@@ -47,6 +48,9 @@ def submit (recaptcha_challenge_field,
             recaptcha_response_field,
             private_key,
             remoteip):
+
+    recaptcha_challenge_field=force_text(recaptcha_challenge_field)
+    recaptcha_response_field=force_text(recaptcha_response_field)
     """
     Submits a reCAPTCHA request for verification. Returns RecaptchaResponse
     for the request
